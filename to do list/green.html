@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>To-Do List (Full App in One File)</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #1e1e1e;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 0;
+        padding: 40px;
+    }
+    h1 {
+        margin-bottom: 20px;
+        font-size: 32px;
+    }
+    #todo-container {
+        width: 100%;
+        max-width: 500px;
+        background: #2b2b2b;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    #task-input {
+        width: 75%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        margin-right: 10px;
+        outline: none;
+        background: #3b3b3b;
+        color: white;
+    }
+    #add-btn {
+        padding: 10px 15px;
+        background: #4CAF50;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 20px;
+    }
+    li {
+        background: #393939;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .completed {
+        text-decoration: line-through;
+        color: #888;
+    }
+    button {
+        margin-left: 5px;
+        padding: 5px 8px;
+        cursor: pointer;
+        border-radius: 4px;
+        border: none;
+    }
+    .edit-btn { background: #ff9800; color: white; }
+    .delete-btn { background: #f44336; color: white; }
+    .save-btn { background: #4CAF50; color: white; }
+</style>
+</head>
+<body>
+
+<h1>Full To-Do List (Single HTML File)</h1>
+
+<div id="todo-container">
+    <input id="task-input" placeholder="Enter new task...">
+    <button id="add-btn">Add</button>
+
+    <ul id="task-list"></ul>
+</div>
+
+<script>
+// ----------- LOCAL STORAGE BACKEND -------------
+function loadTasks() {
+    return JSON.parse(localStorage.getItem("tasks") || "[]");
+}
+function saveTasks(tasks) {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+// ----------- MAIN APP -------------
+let tasks = loadTasks();
+const taskList = document.getElementById("task-list");
+const taskInput = document.getElementById("task-input");
+
+// Render tasks
+function renderTasks() {
+    taskList.innerHTML = "";
+    tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+
+        const span = document.createElement("span");
+        span.textContent = task.text;
+        if (task.completed) span.classList.add("completed");
+        span.style.cursor = "pointer";
+
+        span.onclick = () => {
+            task.completed = !task.completed;
+            saveTasks(tasks);
+            renderTasks();
+        };
+
+        li.appendChild(span);
+
+        // EDIT BUTTON
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "Edit";
+        editBtn.className = "edit-btn";
+        editBtn.onclick = () => editTask(index);
+        li.appendChild(editBtn);
+
+        // DELETE BUTTON
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "delete-btn";
+        deleteBtn.onclick = () => deleteTask(index);
+        li.appendChild(deleteBtn);
+
+        taskList.appendChild(li);
+    });
+}
+
+// Add task
+document.getElementById("add-btn").onclick = () => {
+    const text = taskInput.value.trim();
+    if (!text) return;
+
+    tasks.push({ text, completed: false });
+    saveTasks(tasks);
+    renderTasks();
+    taskInput.value = "";
+};
+
+// Edit task
+function editTask(index) {
+    const newText = prompt("Edit task:", tasks[index].text);
+    if (newText !== null && newText.trim() !== "") {
+        tasks[index].text = newText.trim();
+        saveTasks(tasks);
+        renderTasks();
+    }
+}
+
+// Delete task
+function deleteTask(index) {
+    tasks.splice(index, 1);
+    saveTasks(tasks);
+    renderTasks();
+}
+
+// Initial render
+renderTasks();
+</script>
+
+</body>
+</html>
